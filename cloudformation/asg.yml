@@ -1,0 +1,216 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Creates ASG with Specified Min, Max, and desired capacity in each specified subnet"
+
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Network configuration
+        Parameters:
+          - pVpc
+          - VPCZoneIdentifier
+      - Label:
+          default: Auto Scaling Configs
+        Parameters:
+          - pMaxSizaASG
+          - pMinSizeASG
+          - pDesiredCapacityASG
+      - Label:
+          default: Amazon EC2 configuration
+        Parameters:
+          - pOperatingSystem
+          - pTagNameValue
+          - pVolumeSize
+          - pBootstrapUrl
+
+    ParameterLabels:
+      pVpc:
+        default: VPC
+      pSubnet:
+        default: Subnet
+      pVolumeSize:
+        default: Volume Size
+      MaxSizeASG:
+        default: Max Size of ASG
+      MinSizeASG:
+        default: Minimum Size of ASG
+      DesiredCapacityASG:
+        default: Desired Capacity of ASG
+      VPCZoneIdentifier:
+        default: VPC Zone Identifier
+      pTagNameValue:
+        default: Name Tag Value
+      pBootstrapUrl:
+        default: Boot Strap URL
+      pOperatingSystem:
+        default: Operating System (do not change)
+
+Parameters:
+  MaxSizeASG:
+    Description: "Enter the Max Size for the ASG"
+    Type: Number
+    Default: 1
+  MinSizeASG:
+    Description: "Enter the Min Size for the ASG"
+    Type: Number
+    Default: 1
+  DesiredCapacityASG:
+    Description: "Enter the desired capacity for the ASG"
+    Type: Number
+    Default 1
+  VPCZoneIdentifier:
+    Description: "List the Subnet Ids of the instances"
+    Type: List<AWS::EC2::Subnet::Id>
+  pOperatingSystem:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-ebs"
+  VolumeSize:
+    Description: Enter the number of GBs you want your volume to be.
+    Type: Number
+    Default: 100
+    MinValue: 8
+  pBootstrapUrl:
+    Type: String
+    Description: URL to download and execute a bash script. This field is not required.
+  pTagNameValue:
+    Description: "Required: Enter the tag name you'd like applied to the instances. Tag Name gives the name to the EC2 instance."
+    Type: String
+    MinLength: 1
+  pVpc:
+    Description: The VPC to launch the EC2 instance in to.
+    Type: AWS::EC2::VPC::Id
+
+Rules:
+  SubnetInVPC:
+    Assertions:
+      - Assert: !EachMemberIn
+          - !ValueOfAll
+            - AWS::EC2::Subnet::Id
+            - VpcId
+          - !RefAll "AWS::EC2::VPC::Id"
+        AssertDescription: All subnets must in the VPC
+
+Conditions:
+  cUseBootstrapUrl: !Not [!Equals ["", !Ref pBootstrapUrl]]
+
+Resources:
+
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT10M
+    Properties:
+      AutoScalingGroupName: Test-AutoScale
+      LaunchConfigurationName: !Ref LaunchConfig
+      Cooldown: '120'
+      DesiredCapacity: !Ref DesiredCapacityASG
+
+      MaxSize: !Ref MaxSizeASG
+      MinSize: !Ref MinSizeASG
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}
+          PropagateAtLaunch: true
+      VPCZoneIdentifier: !Ref VPCZoneIdentifier
+
+  LaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref pOperatingSystem
+      SecurityGroups:
+        - !Ref rSecurityGroupDefault
+      InstanceType: "t2.micro"
+      IamInstanceProfile: !Ref rec2InstanceProfile
+      LaunchConfigurationName: TestLaunch
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: !Ref VolumeSize
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            #!/bin/bash
+            # Get the latest CloudFormation package
+            yum update -y aws-cfn-bootstrap
+            wget https://effectual-ansible.s3.amazonaws.com/downloads/falcon-sensor-5.43.0-10807.amzn2.x86_64.rpm
+            yum install falcon-sensor-5.43.0-10807.amzn2.x86_64.rpm -y
+            /opt/CrowdStrike/falconctl -s --cid=${pCrowdStrikeCID}
+            systemctl start falcon-sensor && systemctl enable falcon-sensor
+            ls
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource AutoScalingGroup --region ${AWS::Region}
+            ${curlUrl}
+          - {
+              curlUrl:
+                !If [
+                  cUseBootstrapUrl,
+                  !Sub "curl -fsS ${pBootstrapUrl} | bash",
+                  "",
+                ],
+            }
+
+  rSecurityGroupDefault:
+    Type: AWS::EC2::SecurityGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W5
+            reason: This default security group is purposely open to the world for egress for ease of adoption.
+          - id: W29
+            reason: This default security group is purposely open on all ports for egress for ease of adoption.
+    Properties:
+      GroupDescription: !Sub "Default SG for SC Product ${pTagNameValue} "
+      VpcId: !Ref pVpc
+      SecurityGroupEgress:
+        - Description: Outbound unrestricted traffic
+          IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Ref pTagNameValue
+
+  rEc2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:  !Sub "ep-${AWS::StackName}"
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [ec2.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+        - PolicyName: ASG
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudformation:DescribeStackResource
+                  - cloudformation:SignalResource
+                Resource: "*"
+      ManagedPolicyArns:
+      - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+      - !Sub 'arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy'
+
+  rec2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub "ep-${AWS::StackName}"
+      Path: /
+      Roles:
+        - !Ref rEc2Role
+
+
+
+Outputs:
+  AutoscalingGroup:
+    Description: "The newly created asg"
+    Value:
+      Ref: "AutoScalingGroup"
+  LaunchConfig:
+    Description: "the newly created launch config"
+    Value:
+      Ref: "LaunchConfig"
