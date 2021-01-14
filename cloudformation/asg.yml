@@ -9,11 +9,11 @@ Metadata:
           default: Network configuration
         Parameters:
           - pVpc
-          - VPCZoneIdentifier
+          - pVPCZoneIdentifier
       - Label:
           default: Auto Scaling Configs
         Parameters:
-          - pMaxSizaASG
+          - pMaxSizeASG
           - pMinSizeASG
           - pDesiredCapacityASG
       - Label:
@@ -27,17 +27,15 @@ Metadata:
     ParameterLabels:
       pVpc:
         default: VPC
-      pSubnet:
-        default: Subnet
       pVolumeSize:
         default: Volume Size
-      MaxSizeASG:
+      pMaxSizeASG:
         default: Max Size of ASG
-      MinSizeASG:
+      pMinSizeASG:
         default: Minimum Size of ASG
-      DesiredCapacityASG:
+      pDesiredCapacityASG:
         default: Desired Capacity of ASG
-      VPCZoneIdentifier:
+      pVPCZoneIdentifier:
         default: VPC Zone Identifier
       pTagNameValue:
         default: Name Tag Value
@@ -47,25 +45,25 @@ Metadata:
         default: Operating System (do not change)
 
 Parameters:
-  MaxSizeASG:
+  pMaxSizeASG:
     Description: "Enter the Max Size for the ASG"
     Type: Number
     Default: 1
-  MinSizeASG:
+  pMinSizeASG:
     Description: "Enter the Min Size for the ASG"
     Type: Number
     Default: 1
-  DesiredCapacityASG:
+  pDesiredCapacityASG:
     Description: "Enter the desired capacity for the ASG"
     Type: Number
-    Default 1
-  VPCZoneIdentifier:
+    Default: 1
+  pVPCZoneIdentifier:
     Description: "List the Subnet Ids of the instances"
     Type: List<AWS::EC2::Subnet::Id>
   pOperatingSystem:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-ebs"
-  VolumeSize:
+  pVolumeSize:
     Description: Enter the number of GBs you want your volume to be.
     Type: Number
     Default: 100
@@ -105,15 +103,15 @@ Resources:
       AutoScalingGroupName: Test-AutoScale
       LaunchConfigurationName: !Ref LaunchConfig
       Cooldown: '120'
-      DesiredCapacity: !Ref DesiredCapacityASG
+      DesiredCapacity: !Ref pDesiredCapacityASG
 
-      MaxSize: !Ref MaxSizeASG
-      MinSize: !Ref MinSizeASG
+      MaxSize: !Ref pMaxSizeASG
+      MinSize: !Ref pMinSizeASG
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}
           PropagateAtLaunch: true
-      VPCZoneIdentifier: !Ref VPCZoneIdentifier
+      VPCZoneIdentifier: !Ref pVPCZoneIdentifier
 
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -127,18 +125,13 @@ Resources:
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
-            VolumeSize: !Ref VolumeSize
+            VolumeSize: !Ref pVolumeSize
       UserData:
         Fn::Base64: !Sub
           - |
             #!/bin/bash
             # Get the latest CloudFormation package
             yum update -y aws-cfn-bootstrap
-            wget https://effectual-ansible.s3.amazonaws.com/downloads/falcon-sensor-5.43.0-10807.amzn2.x86_64.rpm
-            yum install falcon-sensor-5.43.0-10807.amzn2.x86_64.rpm -y
-            /opt/CrowdStrike/falconctl -s --cid=${pCrowdStrikeCID}
-            systemctl start falcon-sensor && systemctl enable falcon-sensor
-            ls
             /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource AutoScalingGroup --region ${AWS::Region}
             ${curlUrl}
           - {
