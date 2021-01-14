@@ -22,7 +22,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: grolston/cfn-security@master
       with:
-        cloudformation_directory: "./conformance-packs/"
+        cloudformation_directory: "./cloudformation/"
         scanner: "cfn-nag"
 
   ## checkov security scan
@@ -33,5 +33,5 @@ jobs:
     - uses: actions/checkout@v2
     - uses: grolston/cfn-security@master
       with:
-        cloudformation_directory: "./conformance-packs/"
+        cloudformation_directory: "./cloudformation/"
         scanner: "checkov"
