@@ -20,10 +20,20 @@ jobs:
     if: always()
     steps:
     - uses: actions/checkout@v2
-    - uses: grolston/cfn-security@master
+    - uses: grolston/cfn-security@all-tools
       with:
         cloudformation_directory: "./cloudformation/"
         scanner: "cfn-nag"
+
+  ## cfn-guard security scan
+  security-scan-cfn-guard:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: grolston/cfn-security@all-tools
+      with:
+        cloudformation_directory: './cloudformation/' ## change to your template directory
+        scanner: "cfn-guard"
 
   ## checkov security scan
   validate_checkov:
@@ -31,7 +41,7 @@ jobs:
     if: always()
     steps:
     - uses: actions/checkout@v2
-    - uses: grolston/cfn-security@master
+    - uses: grolston/cfn-security@all-tools
       with:
         cloudformation_directory: "./cloudformation/"
         scanner: "checkov"
