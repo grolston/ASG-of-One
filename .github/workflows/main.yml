@@ -1,4 +1,4 @@
-name: 'Master/Main Branch (Deploy)'
+name: 'SAST'
 
 on: [push]
 
