@@ -1,4 +1,4 @@
-name: 'Checkov'
+name: 'Checkov and Nag Actions'
 
 on: [push]
 
@@ -26,4 +26,4 @@ jobs:
       - name: cfn-nag
         uses: stelligent/cfn_nag@master
         with:
-          input_path: templates
+          input_path: cloudformation/
