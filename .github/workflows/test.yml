@@ -15,3 +15,15 @@ jobs:
         uses: bridgecrewio/checkov-action@master
         with:
           directory: cloudformation/
+
+  cfn-nag-job:
+    runs-on: ubuntu-latest
+    name: cfn-nag-action
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@master
+
+      - name: cfn-nag
+        uses: stelligent/cfn_nag@master
+        with:
+          input_path: templates
