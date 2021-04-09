@@ -23,6 +23,7 @@ Metadata:
           - pTagNameValue
           - pVolumeSize
           - pBootstrapUrl
+          - pInstanceType
 
     ParameterLabels:
       pVpc:
@@ -43,6 +44,8 @@ Metadata:
         default: Boot Strap URL
       pOperatingSystem:
         default: Operating System (do not change)
+      pInstanceType:
+        default: Instance Type
 
 Parameters:
   pMaxSizeASG:
@@ -78,6 +81,14 @@ Parameters:
   pVpc:
     Description: The VPC to launch the EC2 instance in to.
     Type: AWS::EC2::VPC::Id
+  pInstanceType:
+    Description: Instance type of EC2
+    Type: String
+    Default: "t3.micro"
+    AllowedValues:
+      - "t3.micro"
+      - "t3a.micro"
+      - "t3.small"
 
 Rules:
   SubnetInVPC:
@@ -119,7 +130,7 @@ Resources:
       ImageId: !Ref pOperatingSystem
       SecurityGroups:
         - !Ref rSecurityGroupDefault
-      InstanceType: "t2.micro"
+      InstanceType: !Ref pInstanceType
       IamInstanceProfile: !Ref rec2InstanceProfile
       LaunchConfigurationName: TestLaunch
       BlockDeviceMappings:

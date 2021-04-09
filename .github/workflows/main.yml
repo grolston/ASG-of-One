@@ -1,6 +1,12 @@
-name: 'SAST'
+name: 'main'
 
 on: [push]
+
+  AWS_DEFAULT_REGION: us-west-2
+  AWS_DEFAULT_OUTPUT: json
+  AWS_ACCESS_KEY_ID: ${{ secrets.ACCESSKEYID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.ACCESSKEY }}
+  AWS_S3_BUCKET: ${{ secrets.S3BUCKET }}
 
 jobs:
 
@@ -34,3 +40,19 @@ jobs:
       with:
         cloudformation_directory: "./cloudformation/"
         scanner: "checkov"
+
+  deliver:
+    name: Deliver
+    if: github.ref == 'refs/heads/master'
+    needs: [ validate_checkov, validate_cfn-nag, validate_cfn-lint]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+    - uses: jakejarvis/s3-sync-action@master
+      with:
+        args: --delete
+      env:
+        AWS_REGION: 'us-west-2'
+        SOURCE_DIR: 'cloudformation'
+        DEST_DIR: 'asg'
