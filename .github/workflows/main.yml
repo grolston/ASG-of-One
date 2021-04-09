@@ -2,6 +2,7 @@ name: 'main'
 
 on: [push]
 
+env:
   AWS_DEFAULT_REGION: us-west-2
   AWS_DEFAULT_OUTPUT: json
   AWS_ACCESS_KEY_ID: ${{ secrets.ACCESSKEYID }}
