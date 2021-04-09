@@ -45,7 +45,7 @@ jobs:
   deliver:
     name: Deliver
     if: github.ref == 'refs/heads/master'
-    needs: [ validate_checkov, validate_cfn-nag, validate_cfn-lint]
+    needs: [ validate_checkov, validate_cfn-nag, validate-cfn-lint]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
