@@ -89,6 +89,8 @@ Parameters:
       - "t3.micro"
       - "t3a.micro"
       - "t3.small"
+      - "t2.micro"
+      - "t2.small"
 
 Rules:
   SubnetInVPC:
@@ -115,7 +117,6 @@ Resources:
       LaunchConfigurationName: !Ref LaunchConfig
       Cooldown: '120'
       DesiredCapacity: !Ref pDesiredCapacityASG
-
       MaxSize: !Ref pMaxSizeASG
       MinSize: !Ref pMinSizeASG
       Tags:
