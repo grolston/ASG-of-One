@@ -101,7 +101,7 @@ Parameters:
       - "t3.micro"
       - "t3.small"
       - "t3a.micro"
-      - "t3a.smalladd"
+      - "t3a.small"
 
 
   pEc2User:
