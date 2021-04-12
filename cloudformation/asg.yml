@@ -99,10 +99,11 @@ Parameters:
     Default: "t3.micro"
     AllowedValues:
       - "t3.micro"
-      - "t3a.micro"
       - "t3.small"
-      - "t2.micro"
-      - "t2.small"
+      - "t3a.micro"
+      - "t3a.smalladd"
+
+
   pEc2User:
     Description: "EC2 Username"
     Type: String
