@@ -27,6 +27,7 @@ Metadata:
       - Label:
           default: EC2 User Configs
         Parameters:
+          - pAddEc2User
           - pEc2User
           - pEc2UserPassword
 
@@ -55,6 +56,8 @@ Metadata:
         default: EC2 User
       pEc2UserPassword:
         default: Password
+      pAddEc2User:
+        default: Add EC2 User
 
 Parameters:
   pMaxSizeASG:
@@ -108,6 +111,9 @@ Parameters:
     Description: "EC2 User Password"
     Type: String
     NoEcho: true
+    AllowedPattern : "^[a-zA-Z0-9]*$"
+    MinLength: 0
+    MaxLength: 41
   pAddEc2User:
     Description: Allow an EC2 user to be created for EC2 console access
     Type: String
