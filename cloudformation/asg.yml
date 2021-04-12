@@ -24,6 +24,11 @@ Metadata:
           - pVolumeSize
           - pBootstrapUrl
           - pInstanceType
+      - Label:
+          default: EC2 User Configs
+        Parameters:
+          - pEc2User
+          - pEc2UserPassword
 
     ParameterLabels:
       pVpc:
@@ -46,6 +51,10 @@ Metadata:
         default: Operating System (do not change)
       pInstanceType:
         default: Instance Type
+      pEc2User:
+        default: EC2 User
+      pEc2UserPassword:
+        default: Password
 
 Parameters:
   pMaxSizeASG:
@@ -91,6 +100,21 @@ Parameters:
       - "t3.small"
       - "t2.micro"
       - "t2.small"
+  pEc2User:
+    Description: "EC2 Username"
+    Type: String
+    MinLength: 1
+  pEc2UserPassword:
+    Description: "EC2 User Password"
+    Type: String
+    NoEcho: true
+  pAddEc2User:
+    Description: Allow an EC2 user to be created for EC2 console access
+    Type: String
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "true"
 
 Rules:
   SubnetInVPC:
@@ -104,6 +128,7 @@ Rules:
 
 Conditions:
   cUseBootstrapUrl: !Not [!Equals ["", !Ref pBootstrapUrl]]
+  cAddEc2User: !Equals ["true", !Ref pAddEc2User]
 
 Resources:
 
@@ -145,15 +170,15 @@ Resources:
             #!/bin/bash
             # Get the latest CloudFormation package
             yum update -y aws-cfn-bootstrap
+            ls
             /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource AutoScalingGroup --region ${AWS::Region}
+            ${addEc2User}
             ${curlUrl}
           - {
               curlUrl:
-                !If [
-                  cUseBootstrapUrl,
-                  !Sub "curl -fsS ${pBootstrapUrl} | bash",
-                  "",
-                ],
+                !If [cUseBootstrapUrl, !Sub "curl -fsS ${pBootstrapUrl} | bash", "", ],
+              addEc2User:
+                !If [cAddEc2User, !Sub 'adduser ${pEc2User} ; echo "${pEc2User}:${pEc2UserPassword}" | chpasswd', "", ],
             }
 
   rSecurityGroupDefault:
