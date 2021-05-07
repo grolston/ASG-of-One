@@ -50,7 +50,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@master
-    - uses: jakejarvis/s3-sync-action@v1
+    - uses: jakejarvis/s3-sync-action@master
       with:
         args: --delete
       env:
