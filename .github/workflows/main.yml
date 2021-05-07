@@ -16,7 +16,7 @@ jobs:
     if: always()
     steps:
     - uses: actions/checkout@v2
-    - uses: grolston/cfn-security@v1
+    - uses: grolston/cfn-security@master
       with:
         cloudformation_directory: "./cloudformation/"
         scanner: "cfn-nag"
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: grolston/cfn-security@v1
+    - uses: grolston/cfn-security@master
       with:
         cloudformation_directory: './cloudformation/' ## change to your template directory
         scanner: "cfn-lint"
@@ -37,7 +37,7 @@ jobs:
     if: always()
     steps:
     - uses: actions/checkout@v2
-    - uses: grolston/cfn-security@v1
+    - uses: grolston/cfn-security@master
       with:
         cloudformation_directory: "./cloudformation/"
         scanner: "checkov"
