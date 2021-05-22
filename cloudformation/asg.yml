@@ -230,7 +230,7 @@ Resources:
                   - cloudformation:SignalResource
                 Resource: "*"
       ManagedPolicyArns:
-      - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonSSMManagedInstanceCore'
+      - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore'
       - !Sub 'arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy'
 
   rec2InstanceProfile:
@@ -240,8 +240,6 @@ Resources:
       Path: /
       Roles:
         - !Ref rEc2Role
-
-
 
 Outputs:
   AutoscalingGroup:
