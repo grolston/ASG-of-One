@@ -166,6 +166,9 @@ Resources:
       InstanceType: !Ref pInstanceType
       IamInstanceProfile: !Ref rec2InstanceProfile
       LaunchConfigurationName: TestLaunch
+      MetadataOptions:
+        HttpEndpoint: 'enabled'
+        HttpTokens: 'required'
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
