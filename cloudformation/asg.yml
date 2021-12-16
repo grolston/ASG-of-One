@@ -145,7 +145,7 @@ Resources:
       ResourceSignal:
         Timeout: PT10M
     Properties:
-      AutoScalingGroupName: Test-AutoScale
+      AutoScalingGroupName: !Sub "ASG-${AWS::StackName}"
       LaunchConfigurationName: !Ref LaunchConfig
       Cooldown: '120'
       DesiredCapacity: !Ref pDesiredCapacityASG
@@ -165,7 +165,7 @@ Resources:
         - !Ref rSecurityGroupDefault
       InstanceType: !Ref pInstanceType
       IamInstanceProfile: !Ref rec2InstanceProfile
-      LaunchConfigurationName: TestLaunch
+      LaunchConfigurationName: !Sub "LC-${AWS::StackName}"
       MetadataOptions:
         HttpEndpoint: 'enabled'
         HttpTokens: 'required'
