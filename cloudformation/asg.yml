@@ -215,6 +215,7 @@ Resources:
 
   rEc2Role:
     Type: AWS::IAM::Role
+    # checkov:skip=CKV_AWS_111:Ensure IAM policies does not allow write access without constraints
     Metadata:
       cfn_nag:
         rules_to_suppress:
