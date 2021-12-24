@@ -193,13 +193,13 @@ Resources:
 
   rSecurityGroupDefault:
     Type: AWS::EC2::SecurityGroup
-    Metadata:
-      cfn_nag:
-        rules_to_suppress:
-          - id: W5
-            reason: This default security group is purposely open to the world for egress for ease of adoption.
-          - id: W29
-            reason: This default security group is purposely open on all ports for egress for ease of adoption.
+    # Metadata:
+    #   cfn_nag:
+    #     rules_to_suppress:
+    #       - id: W5
+    #         reason: This default security group is purposely open to the world for egress for ease of adoption.
+    #       - id: W29
+    #         reason: This default security group is purposely open on all ports for egress for ease of adoption.
     Properties:
       GroupDescription: !Sub "Default SG for SC Product ${pTagNameValue} "
       VpcId: !Ref pVpc
