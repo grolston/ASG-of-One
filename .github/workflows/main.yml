@@ -11,6 +11,16 @@ env:
 
 jobs:
 
+  ## Guard rule set FedRAMP-Moderate
+  sast-shiftleft:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: grolston/ShiftLeft@main
+      with:
+        data_directory: './cloudformation/' ## change to your template directory
+        rule_set: "FedRAMP-Moderate"
+
   validate_cfn-nag:
     runs-on: ubuntu-latest
     if: always()
