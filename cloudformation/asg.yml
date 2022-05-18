@@ -102,8 +102,6 @@ Parameters:
       - "t3.small"
       - "t3a.micro"
       - "t3a.small"
-
-
   pEc2User:
     Description: "EC2 Username"
     Type: String
