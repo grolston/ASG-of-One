@@ -221,6 +221,9 @@ Resources:
             reason: This default security group is purposely open to the world for egress for ease of adoption.
           - id: W28
             reason: Using explicit name for identification
+      guard:
+        SuppressedRules:
+          - "IAM_NO_INLINE_POLICY_CHECK"
     Properties:
       RoleName:  !Sub "ep-${AWS::StackName}"
       AssumeRolePolicyDocument:
