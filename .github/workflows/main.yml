@@ -11,15 +11,15 @@ env:
 
 jobs:
 
-  ## Guard rule set FedRAMP-Moderate
-  sast-shiftleft:
+  ## Guard rule set 
+  sast-guard:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: grolston/guard-action@main
       with:
         data_directory: './cloudformation/' ## change to your template directory
-        rule_set: "cis-aws-benchmark-level-1"
+        rule_set: "NIST800-53rev5"
 
   validate_cfn-nag:
     runs-on: ubuntu-latest
