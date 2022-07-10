@@ -20,6 +20,8 @@ jobs:
       with:
         data_directory: './cloudformation/' ## change to your template directory
         rule_set: "FedRAMP-Moderate"
+        show_summary: 'pass'
+        output_format: 'json'
 
   validate_cfn-nag:
     runs-on: ubuntu-latest
